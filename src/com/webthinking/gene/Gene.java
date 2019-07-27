@@ -742,7 +742,9 @@ public class Gene {
 				}
 				oldScore = score;
 			}
-			if (i % 10000 == 0) {
+			int interval = 10000;
+			if (i < interval) interval = 100; 
+			if (i % interval == 0) {
 				if (Gene.debugMode)
 					System.out.println("++Mutation count = " + i);
 				changedCount = testGene.compareWithOriginalSequence();
