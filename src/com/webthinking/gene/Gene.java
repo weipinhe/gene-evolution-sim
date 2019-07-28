@@ -688,12 +688,22 @@ public class Gene {
 	public static Map<String, String> produceReverseProteinToDnaMap () {
 		Map<String, String> proteinToDnaMap = new HashMap<String, String>();
 		Set<Entry<String, String>> entrySet = codonMap.entrySet();
+		if (debugMode)
+			System.out.println("#########codonMap entrySet content");
+			System.out.println(entrySet);
+		
+		
 		Iterator<Entry<String, String>> itr = entrySet.iterator();
 		while (itr.hasNext()) {
-			String value = itr.next().getValue();
-			String key = itr.next().getKey();
+			Entry<String, String> mapEntry = itr.next();
+			String value = mapEntry.getValue();
+			String key = mapEntry.getKey();
 			proteinToDnaMap.put(value, key);
 		};
+		
+		if (debugMode)
+			System.out.println("#########proteinToDnaMap content");
+			System.out.println(proteinToDnaMap);
 		
 		return proteinToDnaMap;
 	}
