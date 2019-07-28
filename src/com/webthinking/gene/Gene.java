@@ -698,7 +698,9 @@ public class Gene {
 			Entry<String, String> mapEntry = itr.next();
 			String value = mapEntry.getValue();
 			String key = mapEntry.getKey();
-			proteinToDnaMap.put(value, key);
+			String existingValue = proteinToDnaMap.get(value);
+			String dnaValue = (existingValue==null?key:existingValue + key);			
+			proteinToDnaMap.put(value, dnaValue);
 		};
 		
 		if (debugMode)
@@ -714,7 +716,11 @@ public class Gene {
 		StringBuffer dnaSequence = new StringBuffer();
 		for (int i = 0; i < proteiSequence.length(); i++) {
 			String currentAminoAcidCode  = proteiSequence.substring(i, i+1);
-			dnaSequence.append(proteinToDnaMap.get(currentAminoAcidCode));
+			String dnaCombos = proteinToDnaMap.get(currentAminoAcidCode);
+			int beginIndex = 0;
+			beginIndex = randomGenerator.nextInt(dnaCombos.length()/3)*3;
+			String dnaComboToUse = dnaCombos.substring(beginIndex, beginIndex+3);
+			dnaSequence.append(dnaComboToUse);
 			
 		}
 		return dnaSequence.toString();
