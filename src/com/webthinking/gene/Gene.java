@@ -1,8 +1,12 @@
 package com.webthinking.gene;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.Set;
 
 public class Gene {
 	private String name;
@@ -681,6 +685,31 @@ public class Gene {
 		return changedCount;
 	}
 
+	public static Map<String, String> produceReverseProteinToDnaMap () {
+		Map<String, String> proteinToDnaMap = new HashMap<String, String>();
+		Set<Entry<String, String>> entrySet = codonMap.entrySet();
+		Iterator<Entry<String, String>> itr = entrySet.iterator();
+		while (itr.hasNext()) {
+			String value = itr.next().getValue();
+			String key = itr.next().getKey();
+			proteinToDnaMap.put(value, key);
+		};
+		
+		return proteinToDnaMap;
+	}
+	
+	public static String decodeProteinToDNA (String proteiSequence) {
+		Map<String, String> proteinToDnaMap = produceReverseProteinToDnaMap();
+		
+		StringBuffer dnaSequence = new StringBuffer();
+		for (int i = 0; i < proteiSequence.length(); i++) {
+			String currentAminoAcidCode  = proteiSequence.substring(i, i+1);
+			dnaSequence.append(proteinToDnaMap.get(currentAminoAcidCode));
+			
+		}
+		return dnaSequence.toString();
+	}
+
 	public int compareWithOriginalSequence() {
 		return this.compareSequence(this.getOrginalSequence());
 	}
@@ -700,7 +729,7 @@ public class Gene {
 	public static void testGeneCreation() {
 		// Compare two randomly generated genes' sequence
 		System.out
-				.println("******** Compare two randomly generated genes' sequence: ");
+				.println("\n******** Compare two randomly generated genes' sequence: ");
 		Gene randomGene1 = new Gene(2000);
 		randomGene1.compete("");
 		Gene randomGene2 = new Gene(2000);
@@ -713,13 +742,41 @@ public class Gene {
 		// ********* start testing mutation
 		Gene.debugMode = true;
 		System.out.println("\n");
-		System.out.println("******** Start testing mutation: ");
+		System.out.println("******** Start testing mutation and evolve:");
+		System.out.println("Input needed!!! Copy and paste in your target protein sequence (type in \"skip\" if you want to use the default):");
+		
+		Scanner scaner = new Scanner(System.in);
 
 		String targetProteinSeq = // "MTQLQISLLLTATISLLHLVVATPYEAYPIGKQYPPVARVNESFTFQISNDTYKSSVDKTAQITYNCFDLPSWLSFDSSSRTFSGEPSSDLLSDANTTLY"
 									// + "";
 		"FNVILEGTDSADSTSLNNTYQFVVTNRPSISLSSDFNLLALLKNYGYTNGKNALKLDPNEVFNVTFDRSMFTNEESIVSYYGRSQLYNAPLPNWLFFDSGELKFTGTAPVINSAIAPETSYSFVIIATDIEGFSAVEVEFELVIGAHQLTTSIQNSLIINVTDTGNVSYDLPLNYVYLDDDPISSDKLGSINLLDAPDWVALDNATISGSVPDELLGKNSNPANFSVSIYDTYGDVIYFNFEVVSTTDLFAISSLPNINATRGEWFSYYFLPSQFTDYVNTNVSLEFTNSSQDHDWVKFQSSNLTLAGEVPKNFDKLSLGLKANQGSQSQELYFNIIGMDSKITHSNHSANATSTRSSHHSTSTSSYTSSTYTAKISSTSAAATSSAPAALPAANKTSSHNKKAVAIACGVAIPLGVILVALICFLIFWRRRRENPDDENLPHAISGPDLNNPANKPNQENATPLNNPFDDDASSYDDTSIARRLAALNTLKLDNHSATESDISSVDEKRDSLSGMNTYNDQFQSQSKEELLAKPPVQPPESPFFDPQNRSSSVYMDSEPAVNKSWRYTGNLSPVSDIVRDSYGSQKTVDTEKLFDLEAPEKEKRTSRDVTMSSLDPWNSNISPSPVRKSVTPSPYNVTKHRNRHLQNIQDSQSGKNGITPTTMSTSSSDDFVPVKDGENFCWVHSMEPDRRPSKKRVDFSNKSNVNVGQVKDIHGRIPEML";
 
-		Gene testGene = new Gene(targetProteinSeq.length() * 3);
+		String inputTargetSequence = scaner.next(); 
+		if (!"skip".equalsIgnoreCase(inputTargetSequence)) {
+			targetProteinSeq = inputTargetSequence;
+		}
+		
+		int generation = 1000000;
+		
+		System.out.println("Generations to evolve (type 0 to select the default value of 1,000,000): ");		
+		int inputGeneration = scaner.nextInt();
+		if (inputGeneration > 0 ) {
+			generation = inputGeneration;
+		}
+		
+		Gene testGene;
+		System.out.println("Sart sequence (type \"skip\" to select randomly generated sequnce of the same length): ");
+		String inputStartSequence = scaner.next(); 
+		if ("skip".equalsIgnoreCase(inputStartSequence)) {
+			testGene = new Gene(targetProteinSeq.length() * 3);
+		}
+		else {
+			String startDnaSeq = decodeProteinToDNA(inputStartSequence);
+			testGene = new Gene(startDnaSeq);
+		}
+		
+		scaner.close();
+		
 		// testGene.compete("");
 
 		Gene.debugMode = false;
@@ -729,7 +786,7 @@ public class Gene {
 		int selectionPressureTolerance = 1; // smaller is bigger pressure. 0
 											// being biggest pressure
 		int i, changedCount, score, oldScore = -1000000, rejectCount = 0, lastScoreChangeIndex = 0;
-		for (i = 0; i < (1e6); i++) {
+		for (i = 0; i < generation; i++) {
 			testGene.mutate(mutationStrength);
 			score = testGene.compete(targetProteinSeq);
 			if (score < (oldScore - randomGenerator.nextInt(selectionPressureTolerance))
@@ -767,7 +824,7 @@ public class Gene {
 		testGene.compareWithOriginalSequence();
 		testGene.compete("");
 
-		System.out.println("**** Compare with orginal protein sequence:");
+		System.out.println("\n**** Compare with orginal protein sequence:");
 		testGene.compareSequence(
 				testGene.transcribe(testGene.getOrginalSequence()),
 				testGene.transcribe(testGene.getSequence()));
@@ -776,6 +833,6 @@ public class Gene {
 		testGene.compareSequence(targetProteinSeq,
 				testGene.transcribe(testGene.getSequence()));
 
-		// ******** end testing mutation
+		// ********* end testing mutation
 	}
 }
